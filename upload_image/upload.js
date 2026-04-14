@@ -21,9 +21,19 @@ class Upload extends Module {
         mode: event.payload.mode
       }
     };
+    if (!(await this.validate(result))) return;
 
     // upload logic, add processing or whatever before publishing that is done
+    console.log("HELLO I HAVE MADE IT PAST VALIDATION")
     await this.publisher.publish(this.outputChannels()[0], JSON.stringify(result));
+  }
+  async validate(result) {
+    // handling of misinput
+    if (!result.event_id){ console.log('No event ID, aborting upload'); return false;}
+    if (!result.payload.image_id){ console.log('No Image ID, aborting upload'); return false; }
+    if (!result.payload.file_path){ console.log('No File Path, aborting upload'); return false; }
+    if (!result.payload.mode){ console.log('No mode selected, aborting upload'); return false; }
+    return true;
   }
 }
 
