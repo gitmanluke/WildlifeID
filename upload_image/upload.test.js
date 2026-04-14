@@ -20,12 +20,12 @@ describe('Upload', () => {
         mode: 'index'
       }
     };                                                                                                                             
-    await worker.handleEvent(JSON.stringify(test_message))
-    await worker.handleEvent(JSON.stringify(test_message))
+    await worker.handleEvent('image.submitted', JSON.stringify(test_message))
+    await worker.handleEvent('image.submitted', JSON.stringify(test_message))
     expect(publisher.publish).toHaveBeenCalledTimes(2)                                                                                                                                              
   });
                                                                                                                                                                      
-  it('message missing event id', async () => {                                                                                                                          
+  it('message missing event id', async () => {
     const test_message = {
       event_id: null,
       payload: {
@@ -33,9 +33,48 @@ describe('Upload', () => {
         file_path: '/images/wildlife_0001',
         mode: 'index'
       }
-    };                                                                                                                             
-    await worker.handleEvent(JSON.stringify(test_message))
-    expect(publisher.publish).not.toHaveBeenCalled()   
+    };
+    await worker.handleEvent('image.submitted', JSON.stringify(test_message))
+    expect(publisher.publish).not.toHaveBeenCalled()
+  });
+
+  it('message missing image id', async () => {
+    const test_message = {
+      event_id: '001',
+      payload: {
+        image_id: null,
+        file_path: '/images/wildlife_0001',
+        mode: 'index'
+      }
+    };
+    await worker.handleEvent('image.submitted', JSON.stringify(test_message))
+    expect(publisher.publish).not.toHaveBeenCalled()
+  });
+
+  it('message missing file path', async () => {
+    const test_message = {
+      event_id: '001',
+      payload: {
+        image_id: 'wildlife_01',
+        file_path: null,
+        mode: 'index'
+      }
+    };
+    await worker.handleEvent('image.submitted', JSON.stringify(test_message))
+    expect(publisher.publish).not.toHaveBeenCalled()
+  });
+
+  it('message missing mode', async () => {
+    const test_message = {
+      event_id: '001',
+      payload: {
+        image_id: 'wildlife_01',
+        file_path: '/images/wildlife_0001',
+        mode: null
+      }
+    };
+    await worker.handleEvent('image.submitted', JSON.stringify(test_message))
+    expect(publisher.publish).not.toHaveBeenCalled()
   });
 
 });

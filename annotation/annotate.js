@@ -1,4 +1,4 @@
-import { Module } from './module.js';
+import { Module } from '../module.js';
 
 class Annotate extends Module {
   inputChannels() {
@@ -24,7 +24,16 @@ class Annotate extends Module {
       }
     };
 
+    if (!(await this.validate(result))) return;
+
     await this.publisher.publish(this.outputChannels()[0], JSON.stringify(result));
+  }
+
+  async validate(result) {
+    if (!result.event_id)         { console.log('No event ID, aborting annotation'); return false; }
+    if (!result.payload.image_id) { console.log('No image ID, aborting annotation'); return false; }
+    if (!result.payload.mode)     { console.log('No mode, aborting annotation'); return false; }
+    return true;
   }
 }
 
