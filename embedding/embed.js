@@ -1,4 +1,4 @@
-import { Module } from './module.js';
+import { Module } from '../module.js';
 
 class Embed extends Module {
   inputChannels() {
@@ -22,7 +22,16 @@ class Embed extends Module {
       }
     };
 
+    if (!(await this.validate(result))) return;
+
     await this.publisher.publish(this.outputChannels()[0], JSON.stringify(result));
+  }
+
+  async validate(result) {
+    if (!result.event_id)         { console.log('No event ID, aborting embedding'); return false; }
+    if (!result.payload.image_id) { console.log('No image ID, aborting embedding'); return false; }
+    if (!result.payload.mode)     { console.log('No mode, aborting embedding'); return false; }
+    return true;
   }
 }
 

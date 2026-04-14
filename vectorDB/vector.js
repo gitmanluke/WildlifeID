@@ -1,4 +1,4 @@
-import { Module } from './module.js';
+import { Module } from '../module.js';
 
 class Vector extends Module {
   inputChannels() {
@@ -13,6 +13,8 @@ class Vector extends Module {
     const event = JSON.parse(message);
     console.log('Vector:', event.payload.image_id, '| mode:', event.payload.mode);
 
+    if (!(await this.validate(event))) return;
+
     if (event.payload.mode === 'index') {
       // index the embedding, no publish
     } else if (event.payload.mode === 'query') {
@@ -25,6 +27,14 @@ class Vector extends Module {
 
       await this.publisher.publish(this.outputChannels()[0], JSON.stringify(result));
     }
+  }
+
+  async validate(event) {
+    if (!event.event_id)              { console.log('No event ID, aborting vector op'); return false; }
+    if (!event.payload.image_id)      { console.log('No image ID, aborting vector op'); return false; }
+    if (!event.payload.mode)          { console.log('No mode, aborting vector op'); return false; }
+    if (!event.payload.embedding)     { console.log('No embedding, aborting vector op'); return false; }
+    return true;
   }
 }
 

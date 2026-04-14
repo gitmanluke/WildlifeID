@@ -9,7 +9,7 @@ class Upload extends Module {
     return ['image.uploaded'];
   }
 
-  async handleEvent(message) {
+  async handleEvent(channel, message) {
     const event = JSON.parse(message);
     console.log('Uploading:', event.payload.image_id);
 
