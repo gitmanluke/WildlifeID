@@ -10,7 +10,15 @@ class Embed extends Module {
   }
 
   async handleEvent(channel, message) {
-    const event = JSON.parse(message);
+    let event;
+    try {
+      event = JSON.parse(message);
+    } catch {
+      console.log('Invalid JSON, dropping message');
+      return;
+    }
+    if (!(await this.validate(event))) return;
+
     console.log('Embedding:', event.payload.image_id);
 
     const result = {
@@ -21,8 +29,6 @@ class Embed extends Module {
         embedding: 'PLACEHOLDER_VECTOR_EMBEDDING'
       }
     };
-
-    if (!(await this.validate(result))) return;
 
     await this.publisher.publish(this.outputChannels()[0], JSON.stringify(result));
   }

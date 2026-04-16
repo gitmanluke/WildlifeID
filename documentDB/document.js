@@ -10,7 +10,13 @@ class Document extends Module {
   }
 
   async handleEvent(channel, message) {
-    const event = JSON.parse(message);
+    let event;
+    try {
+      event = JSON.parse(message);
+    } catch {
+      console.log('Invalid JSON, dropping message');
+      return;
+    }
 
     if (!(await this.validate(channel, event))) return;
 

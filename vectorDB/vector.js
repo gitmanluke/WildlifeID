@@ -10,7 +10,13 @@ class Vector extends Module {
   }
 
   async handleEvent(channel, message) {
-    const event = JSON.parse(message);
+    let event;
+    try {
+      event = JSON.parse(message);
+    } catch {
+      console.log('Invalid JSON, dropping message');
+      return;
+    }
     console.log('Vector:', event.payload.image_id, '| mode:', event.payload.mode);
 
     if (!(await this.validate(event))) return;

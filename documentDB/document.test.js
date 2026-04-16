@@ -88,4 +88,16 @@ describe('Document', () => {
     ).resolves.not.toThrow();
     expect(publisher.publish).not.toHaveBeenCalled();
   });
+
+  it('malformed JSON does not crash', async () => {
+    await expect(
+      worker.handleEvent('annotation.complete', '{this is not valid json}')
+    ).resolves.not.toThrow();
+  });
+
+  it('start() subscribes to both input channels', async () => {
+    await worker.start();
+    expect(subscriber.subscribe).toHaveBeenCalledWith('annotation.complete', expect.any(Function));
+    expect(subscriber.subscribe).toHaveBeenCalledWith('objects.submitted', expect.any(Function));
+  });
 });
