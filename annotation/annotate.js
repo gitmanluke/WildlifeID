@@ -18,6 +18,7 @@ class Annotate extends Module {
       return;
     }
     if (!(await this.validate(event))) return;
+    if (await this.isDuplicate(event.event_id)) { console.log('Duplicate event, skipping'); return; }
 
     console.log('Annotating:', event.payload.image_id);
 
@@ -33,6 +34,7 @@ class Annotate extends Module {
     };
 
     await this.publisher.publish(this.outputChannels()[0], JSON.stringify(result));
+    await this.markProcessed(event.event_id);
   }
 
   async validate(result) {

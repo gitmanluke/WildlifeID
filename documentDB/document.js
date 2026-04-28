@@ -1,6 +1,16 @@
 import { Module } from '../module.js';
+import { connectDB } from './connect.js';
 
 class Document extends Module {
+  constructor(subscriber, publisher, redisClient) {
+    super(subscriber, publisher, redisClient);
+    this.collection = null;
+  }
+
+  async init() {
+    this.collection = await connectDB();
+  }
+
   inputChannels() {
     return ['annotation.complete', 'objects.submitted'];
   }
@@ -19,14 +29,21 @@ class Document extends Module {
     }
 
     if (!(await this.validate(channel, event))) return;
+    if (await this.isDuplicate(event.event_id)) { console.log('Duplicate event, skipping'); return; }
 
     if (channel === 'annotation.complete') {
       console.log('Document write:', event.payload.image_id);
-      // write image_id + objects to DB
+      await this.collection.updateOne(
+        { image_id: event.payload.image_id },
+        { $set: { image_id: event.payload.image_id, objects: event.payload.objects } },
+        { upsert: true }
+      );
     } else if (channel === 'objects.submitted') {
       console.log('Document read:', event.payload.image_ids);
       // fetch full records by image_ids from DB, return to user
     }
+
+    await this.markProcessed(event.event_id);
   }
 
   async validate(channel, event) {
