@@ -87,4 +87,28 @@ describe('Vector', () => {
     await worker.handleEvent('embedding.complete', JSON.stringify(test_message));
     expect(publisher.publish).not.toHaveBeenCalled();
   });
+
+  it('malformed JSON does not crash and does not publish', async () => {
+    await worker.handleEvent('embedding.complete', '{this is not valid json}');
+    expect(publisher.publish).not.toHaveBeenCalled();
+  });
+
+  it('start() subscribes to embedding.complete', async () => {
+    await worker.start();
+    expect(subscriber.subscribe).toHaveBeenCalledWith('embedding.complete', expect.any(Function));
+  });
+
+  it('query mode published payload contains image_ids array', async () => {
+    const test_message = {
+      event_id: '001',
+      payload: {
+        image_id: 'wildlife_01',
+        mode: 'query',
+        embedding: 'PLACEHOLDER_VECTOR_EMBEDDING'
+      }
+    };
+    await worker.handleEvent('embedding.complete', JSON.stringify(test_message));
+    const published = JSON.parse(publisher.publish.mock.calls[0][1]);
+    expect(Array.isArray(published.payload.image_ids)).toBe(true);
+  });
 });
